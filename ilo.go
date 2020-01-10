@@ -84,6 +84,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+                log.Printf("New Connection")
 		go handleConnection(c)
 	}
 }
