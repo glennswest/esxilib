@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"os"
-	"strconv"
+	//"os"
+        "log"
+	//"strconv"
 	"strings"
 	"time"
 )
@@ -19,6 +20,10 @@ func random() int {
 }
 
 func handleConnection(c net.Conn) {
+
+var servname string
+
+        servname = "none"
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	for {
 		netData, err := bufio.NewReader(c).ReadString('\n')
@@ -28,14 +33,39 @@ func handleConnection(c net.Conn) {
 		}
 
 		temp := strings.TrimSpace(string(netData))
-		if temp == "STOP" {
-			break
-		}
-
-		result := strconv.Itoa(random()) + "\n"
-		c.Write([]byte(string(result)))
+                log.Printf("CMD = %s",temp)
+                co := strings.Fields(temp)
+                switch(co[0]){
+                   case "USER_LOGIN":
+                        log.Printf("Logging into: %s",co[1])
+                        servname = co[1]
+                        break
+                   case "xml":
+                        log.Printf("xml version requested")
+                        result := "<RIBCL VERSION=\"2.0\"></RIBCL>"
+                        send_result(c,result)
+                        break
+                   case "GET_FW_VERSION":
+                        log.Printf("FW Version requested")
+                        result := "<GET_FW_VERSION\r\n FIRMWARE_VERSION=\"1.91\"\r\n MANAGEMENT_PROCESSOR=\"2.22\"\r\n />"
+                        send_result(c,result)
+                        break
+                   case "GET_HOST_POWER_STATUS":
+                        log.Printf("Host Power Status for %s",servname)
+                        break
+                   case "SET_HOST_POWER":
+                        log.Printf("Set Host Power Status for %s: %s",servname,co[1])
+                        break
+                   default: 
+                        log.Printf("Unsupported command: %s", co[0])
+                        break
+                   }
 	}
 	c.Close()
+}
+
+func send_result(c net.Conn, thevalue string){
+     c.Write([]byte(string(thevalue)))
 }
 
 func main() {
