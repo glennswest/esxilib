@@ -2,7 +2,7 @@ package main
 
 import (
         "log"
-        //"strings"
+        "strings"
         "os/exec"
 )
 
@@ -24,11 +24,19 @@ func cmd(hostip string,thecmd string) string {
 
 }
 func getvms(hostip string) {
+    m := make(map[string]string)
     result := cmd(hostip,"vim-cmd vmsvc/getallvms")
-    lines := result.Split("\n")
-    lines = lines[1:]
-
     log.Printf(result)
+    lines := strings.Split(result,"\n")
+    lines = lines[1:]
+    for _, theline := range lines {
+        log.Printf("Line = %s",theline)
+        v := strings.Fields(theline)
+        if (len(v) > 0){
+           m[v[1]] = v[0]
+           }
+        }
+    log.Printf("%v",m)
  
 
 
